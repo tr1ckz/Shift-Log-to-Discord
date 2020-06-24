@@ -17,13 +17,13 @@ local timers = { -- if you want more job shifts add table entry here same as the
 }
 
 local dcname = "Shift Logger" -- bot's name
-local http = "https://discordapp.com/api/webhooks/725204394622320721/lOGGoJ6cttSHe670Dt_ta1O1T2TnT3QT35rLWqOk6Sij3TDdSASta0plYI6wC8W8B7eQ" -- webhook for police
-local http2 = "https://discordapp.com/api/webhooks/573887420433432595/CkQecbK_cHGn0nWzGQDhIOGjF3gVwtGlQamDNRzI8dztiB0Gb0LgrSikS4ilRNw1A4ZR" -- webhook for ems (you can add as many as you want)
-local http3 = "https://discordapp.com/api/webhooks/725199082846683196/k1QEIkmPJaBGOyDgdviykFLpiGNrF6VTr0ZaAvqRz1GA52pc-ZGJYftE3reY-COgze6i" -- mechanic
-local http4 = "https://discordapp.com/api/webhooks/725199280406659150/yoR7Ndwt7jkJusqdUbMmazytJ2iQlnrg3bJIhZs7YhGcgI4mcKW-BNvsQVT-fcpw5Fjb" -- VCM
+local http = "" -- webhook for police
+local http2 = "" -- webhook for ems (you can add as many as you want)
+local http3 = "" -- mechanic
+local http4 = "" -- VCM
 local avatar = "" -- bot's avatar
 local mechavatar = "https://www.dafont.com/forum/attach/orig/8/8/880398.jpg"
-local emsavatar = "https://discordapp.com/api/webhooks/725204635874361464/sJ0kNEkp64onedHHDriXa9jIxbWy1xzVPYvtFxVghFtgoQ-E_raioYnFoJzMwU1NaI-y"
+local emsavatar = ""
 local policeavatar = "https://www.logolynx.com/images/logolynx/60/6081a70682994e87ee9dc3395928a5d8.jpeg"
 local vcmavatar = "https://images.vexels.com/media/users/3/147726/isolated/preview/3c35c23c922833a71a94e7d5faf28b88-car-sale-service-logo-by-vexels.png"
 
@@ -31,7 +31,7 @@ function DiscordLog(name, message, color, job)
     local connect = {
         {
             ["color"] = color,
-           --["title"] = "**".. name .."**",
+            ["title"] = "**".. name .."**",
             ["description"] = message,
             ["footer"] = {
                 ["text"] = "",
@@ -53,19 +53,12 @@ RegisterServerEvent("utk_sl:userjoined")
 AddEventHandler("utk_sl:userjoined", function(job)
     local id = source
     local xPlayer = ESX.GetPlayerFromId(id)
-        local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
-            ['@identifier'] = xPlayer.identifier
-        })
+    local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local firstname = result[1].firstname
+    local lastname  = result[1].lastname
 
-        local firstname = result[1].firstname
-        local lastname  = result[1].lastname
-
-        local data = {
-
-            firstname = firstname,
-            lastname  = lastname,
-
-        }
     table.insert(timers[job], {id = id, identifier = xPlayer.identifier, firstname = firstname, lastname = lastname, time = os.time(), date = os.date("%d/%m/%Y %X")})
 end)
 
@@ -74,21 +67,11 @@ AddEventHandler("utk_sl:jobchanged", function(old, new, method)
     local xPlayer = ESX.GetPlayerFromId(source)
     local header = nil
     local color = nil
-
-        local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
-            ['@identifier'] = xPlayer.identifier
-        })
-
-        local firstname = result[1].firstname
-        local lastname  = result[1].lastname
-
-        local data = {
-
-            firstname = firstname,
-            lastname  = lastname,
-
-        }
-
+    local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local firstname = result[1].firstname
+    local lastname  = result[1].lastname
 
     if old == "police" then
         header = "Police Shift" -- Header
@@ -141,23 +124,11 @@ AddEventHandler("playerDropped", function(reason)
     local header = nil
     local color = nil
     local xPlayer = ESX.GetPlayerFromId(source)
-
-
-        local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
-            ['@identifier'] = xPlayer.identifier
-        })
-
-        local firstname = result[1].firstname
-        local lastname  = result[1].lastname
-
-        local data = {
-
-            firstname = firstname,
-            lastname  = lastname,
-
-        }
-
-
+    local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+        ['@identifier'] = xPlayer.identifier
+    })
+    local firstname = result[1].firstname
+    local lastname  = result[1].lastname
 
     for k, v in pairs(timers) do
         for n = 1, #timers[k], 1 do
