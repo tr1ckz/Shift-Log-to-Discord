@@ -17,15 +17,15 @@ local timers = { -- if you want more job shifts add table entry here same as the
 }
 
 local dcname = "Shift Logger" -- bot's name
-local http = "" -- webhook for police
-local http2 = "" -- webhook for ems (you can add as many as you want)
-local http3 = "" -- mechanic
-local http4 = "" -- cardealer
+local http = "https://discordapp.com/api/webhooks/725204394622320721/lOGGoJ6cttSHe670Dt_ta1O1T2TnT3QT35rLWqOk6Sij3TDdSASta0plYI6wC8W8B7eQ" -- webhook for police
+local http2 = "https://discordapp.com/api/webhooks/573887420433432595/CkQecbK_cHGn0nWzGQDhIOGjF3gVwtGlQamDNRzI8dztiB0Gb0LgrSikS4ilRNw1A4ZR" -- webhook for ems (you can add as many as you want)
+local http3 = "https://discordapp.com/api/webhooks/725199082846683196/k1QEIkmPJaBGOyDgdviykFLpiGNrF6VTr0ZaAvqRz1GA52pc-ZGJYftE3reY-COgze6i" -- mechanic
+local http4 = "https://discordapp.com/api/webhooks/725199280406659150/yoR7Ndwt7jkJusqdUbMmazytJ2iQlnrg3bJIhZs7YhGcgI4mcKW-BNvsQVT-fcpw5Fjb" -- VCM
 local avatar = "" -- bot's avatar
 local mechavatar = "https://www.dafont.com/forum/attach/orig/8/8/880398.jpg"
 local emsavatar = "https://discordapp.com/api/webhooks/725204635874361464/sJ0kNEkp64onedHHDriXa9jIxbWy1xzVPYvtFxVghFtgoQ-E_raioYnFoJzMwU1NaI-y"
 local policeavatar = "https://www.logolynx.com/images/logolynx/60/6081a70682994e87ee9dc3395928a5d8.jpeg"
-local cardealeravatar = "https://images.vexels.com/media/users/3/147726/isolated/preview/3c35c23c922833a71a94e7d5faf28b88-car-sale-service-logo-by-vexels.png"
+local vcmavatar = "https://images.vexels.com/media/users/3/147726/isolated/preview/3c35c23c922833a71a94e7d5faf28b88-car-sale-service-logo-by-vexels.png"
 
 function DiscordLog(name, message, color, job)
     local connect = {
@@ -45,7 +45,7 @@ function DiscordLog(name, message, color, job)
     elseif job == "mechanic" then
         PerformHttpRequest(http3, function(err, text, headers) end, 'POST', json.encode({username = dcname, embeds = connect, avatar_url = mechavatar}), { ['Content-Type'] = 'application/json' })
     elseif job == "cardealer" then
-        PerformHttpRequest(http4, function(err, text, headers) end, 'POST', json.encode({username = dcname, embeds = connect, avatar_url = cardealeravatar}), { ['Content-Type'] = 'application/json' })
+        PerformHttpRequest(http4, function(err, text, headers) end, 'POST', json.encode({username = dcname, embeds = connect, avatar_url = vcmavatar}), { ['Content-Type'] = 'application/json' })
     end
 end
 
@@ -53,8 +53,20 @@ RegisterServerEvent("utk_sl:userjoined")
 AddEventHandler("utk_sl:userjoined", function(job)
     local id = source
     local xPlayer = ESX.GetPlayerFromId(id)
+        local result = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier', {
+            ['@identifier'] = xPlayer.identifier
+        })
 
-    table.insert(timers[job], {id = id, identifier = xPlayer.identifier, name = xPlayer.name, time = os.time(), date = os.date("%d/%m/%Y %X")})
+        local firstname = result[1].firstname
+        local lastname  = result[1].lastname
+
+        local data = {
+
+            firstname = firstname,
+            lastname  = lastname,
+
+        }
+    table.insert(timers[job], {id = id, identifier = xPlayer.identifier, name = firstname, time = os.time(), date = os.date("%d/%m/%Y %X")})
 end)
 
 RegisterServerEvent("utk_sl:jobchanged")
@@ -156,7 +168,7 @@ AddEventHandler("playerDropped", function(reason)
                 elseif duration >= 3600 then
                     timetext = tostring(math.floor(duration / 3600).." hours, "..tostring(math.floor(math.fmod(duration, 3600)) / 60)).." minutes"
                 end
-                DiscordLog(header, "Steam Name: **"..timers[k][n].name.."**\n Shift duration: **__"..timetext.."__**\n Start date: **"..date.."**\n End date: **"..os.date("%d/%m/%Y %X").."**", color, k)
+                DiscordLog(header , "Name: **"..timers[old][i].firstname.. " " ..timers[old][i].lastname.. "**\n Shift duration: **__"..timetext.."__**\n Start date: **"..date.."**\n End date: **"..os.date("%d/%m/%Y %X").."**", color, old)
                 table.remove(timers[k], n)
                 return
             end
